@@ -180,6 +180,40 @@ contains
         d_t = 1. / max_tmp 
     end subroutine delta_t
 
+
+    function advection(g, n, p)
+
+        type(grid), intent(IN) :: g
+        type(phys), intent(IN) :: p
+        type(num), intent(IN) :: n
+        real :: advection, qeo, qns
+        integer :: i, j
+        
+        advection = 0.
+        do i=1,n%nx
+            do j=1,n%ny
+                if (g%u(i,j) > 0) then
+                    qeo =
+                else 
+                    qeo = 
+                end if
+
+
+
+                if (g%v(i,j) > 0) then
+                    qns = 
+                else
+                    qns = 
+                end if
+
+
+            end do
+        end do
+        
+
+
+    end function advection
+
     !subroutine calc_c_t_dt(c_t_dt, c_t, delta_t, delta_x, delta_y, p, n) !obligé de faire plein de subroutine, une pour chaque terme pcq blablabla ils sont relou les profs
     !    real, dimension(:,:), intent(OUT) :: c_t_dt
     !    real, dimension(:,:), intent(IN) :: c_t
