@@ -1,39 +1,49 @@
 program main
     use m_type
+    use sousprog
     implicit none
-    type(phys) :: phys
-    type(num) :: num 
-    type(amont) :: s
-    type(centre) :: Cp
-    type(centre) :: Cs
-    type(centre) :: vite
-    type(centre) :: s
+    type(noueur) :: noeud
+    type(phys) :: p
+    type(num) :: n
+    type(grid) :: g
+    real :: d_t
 
-    integer :: nombre_dite, i
+    integer :: nb_ite, i, j
 
 
-    call lecture('data_2D.dat', p, n)
 
-    allocate(s%x_mesh(n%nx))
-    allocate(cp%C(n%nx))
-    allocate(cf%C(n%nx))
+    call reader('donnees.dat', p, n)
+
+    allocate(g%c(n%nx, n%ny))
+    allocate(g%u(n%nx +1 , n%ny))
+    allocate(g%v(n%nx, n%ny +1))
+
+    allocate(noeud%x(n%nx +1, n%ny +1))
+    allocate(noeud%y(n%nx +1, n%ny +1))
 
 
-    call mesh(s, p, n)
+    call init_c(g%c, p, n)
+    call init_v(g%u, g%v, p, n)
+    call init_noeud(g, p, n, noeud)
+    call delta_t(g, p, n, d_t)
+!    print*, n%nx, n%ny, n%dt
+!    print*, p%kappa
+!    print*, g%c
+!    print*, "c'est en cours" 
+!    print*, g%u
+!    print*, "c'est fini" 
+!    print*, g%v
+!    print*, "on print les coordonnées des noeuds"
 
-    call init(s, cp, cf, p, n)
-
-   
-    
-    do i = 1, 100
-        call ecriture(n, cf, s)
-        call calc(cp, cf, n, p)
+    do i = 1, n%nx +1
+        do j = 1, n%ny +1
+!            print*, "pour x", noeud%x(i,j)
+!            print*, "pour y", noeud%y(i,j) 
+        end do
     end do
+
+    call writer(n, p, g, noeud, 1)
 
     
 
 end program main
-
-
-
-hgfdsgfdsgfds
