@@ -131,19 +131,19 @@ contains
     !            print*,  erf((sqrt( ( real(i) * real(n%nx) - p%L )**2 +&
     !             (real(j) * real(n%ny) - p%L/2. )**2 ) -p%d/2. ) / delta )
 
-                noeud%x(i,j) = real(i-1) * p%L / (real(n%nx) )
-                noeud%y(i,j) = real(j-1) * p%L / (2.*(real(n%ny) ) )
+                noeud%x(i,j) = 2. *real(i-1) * p%L / real(n%nx) 
+                noeud%y(i,j) = real(j-1) * p%L / real(n%ny) 
             end do
         end do
 
         do i = 1,  n%nx+1
-            noeud%x(i, n%ny+1) = real(i-1) * p%L / (real(n%nx) )
-            noeud%y(i, n%ny+1) = p%L / 2.
+            noeud%x(i, n%ny+1) = 2. * real(i-1) * p%L / real(n%nx) 
+            noeud%y(i, n%ny+1) = p%L 
 
         end do
         do j = 1, n%ny+1 
-            noeud%x(n%nx+1, j) = p%L
-            noeud%y(n%nx+1,j) = real(j-1) * p%L / (2.*(real(n%ny) ) )
+            noeud%x(n%nx+1, j) = 2. * p%L
+            noeud%y(n%nx+1,j) = real(j-1) * p%L / real(n%ny)  
         end do
 
     end subroutine init_noeud
@@ -156,8 +156,8 @@ contains
         type(phys), intent(IN) :: p
         type(num), intent(IN) :: n
 
-        f_delta_t = abs(g%u(i, j)) / (n%CLF * 2 * i * p%l / real(n%nx)) + abs(g%v(i, j)) / (n%CLF * j * p%l / real(n%ny)) +&
-        p%kappa /(n%R * (2 * i * p%l / real(n%nx))**2) + p%kappa / (n%R * (j * p%l / real(2*n%ny))**2)
+        f_delta_t = abs(g%u(i, j)) / (real(n%CLF * 2) * p%l / real(n%nx)) + abs(g%v(i, j)) / (real(n%CLF) * p%l / real(n%ny)) +&
+        p%kappa /(n%R * (2. * p%l / real(n%nx))**2) + p%kappa / (n%R * ( p%l / real(n%ny))**2)
     end function f_delta_t
 
 
