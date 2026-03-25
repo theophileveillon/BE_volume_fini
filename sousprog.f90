@@ -131,19 +131,19 @@ contains
     !            print*,  erf((sqrt( ( real(i) * real(n%nx) - p%L )**2 +&
     !             (real(j) * real(n%ny) - p%L/2. )**2 ) -p%d/2. ) / delta )
 
-                noeud%x(i,j) = real(i-1) * p%L / (real(n%nx) )
-                noeud%y(i,j) = real(j-1) * p%L / (2.*(real(n%ny) ) )
+                noeud%x(i,j) = 2. *real(i-1) * p%L / real(n%nx) 
+                noeud%y(i,j) = real(j-1) * p%L / real(n%ny) 
             end do
         end do
 
         do i = 1,  n%nx+1
-            noeud%x(i, n%ny+1) = real(i-1) * p%L / (real(n%nx) )
-            noeud%y(i, n%ny+1) = p%L / 2.
+            noeud%x(i, n%ny+1) = 2. * real(i-1) * p%L / real(n%nx) 
+            noeud%y(i, n%ny+1) = p%L 
 
         end do
         do j = 1, n%ny+1 
-            noeud%x(n%nx+1, j) = p%L
-            noeud%y(n%nx+1,j) = real(j-1) * p%L / (2.*(real(n%ny) ) )
+            noeud%x(n%nx+1, j) = 2. * p%L
+            noeud%y(n%nx+1,j) = real(j-1) * p%L / real(n%ny)  
         end do
 
     end subroutine init_noeud
@@ -156,8 +156,8 @@ contains
         type(phys), intent(IN) :: p
         type(num), intent(IN) :: n
 
-        f_delta_t = abs(g%u(i, j)) / (n%CLF * 2 * i * p%l / real(n%nx)) + abs(g%v(i, j)) / (n%CLF * j * p%l / real(n%ny)) +&
-        p%kappa /(n%R * (2 * i * p%l / real(n%nx))**2) + p%kappa / (n%R * (j * p%l / real(2*n%ny))**2)
+        f_delta_t = abs(g%u(i, j)) / (real(n%CLF * 2) * p%l / real(n%nx)) + abs(g%v(i, j)) / (real(n%CLF) * p%l / real(n%ny)) +&
+        p%kappa /(n%R * (2. * p%l / real(n%nx))**2) + p%kappa / (n%R * ( p%l / real(n%ny))**2)
     end function f_delta_t
 
 
@@ -179,6 +179,78 @@ contains
         end do
         d_t = 1. / max_tmp 
     end subroutine delta_t
+
+
+    function advection(g, n, p, i, j)
+
+        type(grid), intent(IN) :: g
+        type(phys), intent(IN) :: p
+        type(num), intent(IN) :: n
+        real :: advection, qeo, qns, Sx, Sy
+        integer, intent(IN) :: i, j
+        Sx = 2* p%l/n%nx
+        Sy = p%l / n%ny
+        advection = 0.     
+
+        qeo = 0
+        qns = 0
+
+
+        if (g%u(i,j) > 0) then
+            qeo = qeo + Sy * g%u(i,j) * g%C(i-1,j)
+        else 
+            qeo = qeo+ Sy * g%u(i,j) * g%C(i,j)
+        end if
+
+        if (g%u(i+1,j) > 0) then 
+            qeo = qeo - Sy * g%u(i+1,j) * g%C(i,j)
+        else 
+            qeo = qeo- Sy * g%u(i+1,j) * g%C(i+1,j)
+        end if
+
+        if (g%v(i,j) > 0) then
+            qns = qns + Sx * g%v(i,j) * g%c(i,j-1)
+        else
+            qns = qns + Sx * g%v(i,j) * g%c(i,j)
+        end if
+
+        if (g%v(i,j+1) > 0) then
+            qns = qns-Sx * g%v(i,j+1) * g%c(i,j)
+        else 
+            qns = qns-sX * g%v(i,j+1) * g%c(i,j+1)
+        end if
+
+        advection = qeo + qns
+
+
+    end function advection
+
+    function diffusion(g, n, p, i, j)
+
+        type(grid), intent(IN) :: g
+        type(phys), intent(IN) :: p
+        type(num), intent(IN) :: n
+        real :: diffusion, qeo, qns, Sx, Sy
+        integer, intent(IN) :: i, j
+        Sx = 2* p%l/n%nx
+        Sy = p%l / n%ny
+        diffusion = 0.
+        qeo = 0
+        qns = 0
+
+
+
+            qeo = qeo +Sy * ( g%C(i-1,j) - g%C(i,j) )/Sx
+            qeo = qeo +Sy * (g%c(i+1,j) - g%C(i,j))/Sx
+
+            qns = qns +Sx * ( g%c(i, j-1) - g%c(i,j))/Sy
+            qns =qns + Sx * (g%c(i, j+1) - g%c(i,j))/Sy
+
+
+        diffusion = qeo + qns 
+
+    end function diffusion
+
 
     !subroutine calc_c_t_dt(c_t_dt, c_t, delta_t, delta_x, delta_y, p, n) !obligé de faire plein de subroutine, une pour chaque terme pcq blablabla ils sont relou les profs
     !    real, dimension(:,:), intent(OUT) :: c_t_dt
