@@ -181,38 +181,76 @@ contains
     end subroutine delta_t
 
 
-    function advection(g, n, p)
+    function advection(g, n, p, i, j)
 
         type(grid), intent(IN) :: g
         type(phys), intent(IN) :: p
         type(num), intent(IN) :: n
-        real :: advection, qeo, qns
-        integer :: i, j
-        
-        advection = 0.
-        do i=1,n%nx
-            do j=1,n%ny
-                if (g%u(i,j) > 0) then
-                    qeo =
-                else 
-                    qeo = 
-                end if
+        real :: advection, qeo, qns, Sx, Sy
+        integer, intent(IN) :: i, j
+        Sx = 2* p%l/n%nx
+        Sy = p%l / n%ny
+        advection = 0.     
+
+        qeo = 0
+        qns = 0
 
 
+        if (g%u(i,j) > 0) then
+            qeo = qeo + Sy * g%u(i,j) * g%C(i-1,j)
+        else 
+            qeo = qeo+ Sy * g%u(i,j) * g%C(i,j)
+        end if
 
-                if (g%v(i,j) > 0) then
-                    qns = 
-                else
-                    qns = 
-                end if
+        if (g%u(i+1,j) > 0) then 
+            qeo = qeo - Sy * g%u(i+1,j) * g%C(i,j)
+        else 
+            qeo = qeo- Sy * g%u(i+1,j) * g%C(i+1,j)
+        end if
 
+        if (g%v(i,j) > 0) then
+            qns = qns + Sx * g%v(i,j) * g%c(i,j-1)
+        else
+            qns = qns + Sx * g%v(i,j) * g%c(i,j)
+        end if
 
-            end do
-        end do
-        
+        if (g%v(i,j+1) > 0) then
+            qns = qns-Sx * g%v(i,j+1) * g%c(i,j)
+        else 
+            qns = qns-sX * g%v(i,j+1) * g%c(i,j+1)
+        end if
+
+        advection = qeo + qns
 
 
     end function advection
+
+    function diffusion(g, n, p, i, j)
+
+        type(grid), intent(IN) :: g
+        type(phys), intent(IN) :: p
+        type(num), intent(IN) :: n
+        real :: diffusion, qeo, qns, Sx, Sy
+        integer, intent(IN) :: i, j
+        Sx = 2* p%l/n%nx
+        Sy = p%l / n%ny
+        diffusion = 0.
+        qeo = 0
+        qns = 0
+
+
+
+            qeo = qeo +Sy * ( g%C(i-1,j) - g%C(i,j) )/Sx
+            qeo = qeo +Sy * (g%c(i+1,j) - g%C(i,j))/Sx
+
+            qns = qns +Sx * ( g%c(i, j-1) - g%c(i,j))/Sy
+            qns =qns + Sx * (g%c(i, j+1) - g%c(i,j))/Sy
+
+
+        diffusion = qeo + qns 
+
+    end function diffusion
+
 
     !subroutine calc_c_t_dt(c_t_dt, c_t, delta_t, delta_x, delta_y, p, n) !obligé de faire plein de subroutine, une pour chaque terme pcq blablabla ils sont relou les profs
     !    real, dimension(:,:), intent(OUT) :: c_t_dt
