@@ -25,30 +25,30 @@ contains
         
     end subroutine reader
 
-    subroutine writer(n, p, g, noeud, nb_ite)
+    subroutine writer(n, p, g, noeud, Time, Tf, Step)
         type(phys), intent(IN) :: p
         type(num), intent(IN) :: n
         type(grid), intent(IN) :: g
         type(noueur), intent(IN) :: noeud
 
-        integer, intent(IN) :: nb_ite
-        real :: Time
-        integer :: Step, i
+        real, intent(IN) :: Time, Tf
+        integer, intent(IN) :: Step
 
-        Step = int(n%dt)
-        Time = 0.
-        call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'ini' )
 
-        Time = Time + n%dt
-        print*, "on va essayer de rentrer dans la boucle"
+        if (Time == 0.) then
 
-        do i = 1, nb_ite-1
-            call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'int')
-            Time = Time + n%dt
-            print*, "une étape c'est passé"
-        end do
-        print*, "la boucle est passé"
-        call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'end') 
+            call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'ini' )
+        else
+            if (Time == Tf) then
+                call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'end') 
+            else
+                call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'int')
+
+            end if
+        end if
+            
+        
+
 
         print*, time 
         print*, step
@@ -183,7 +183,7 @@ contains
 
     function advection(g, n, p, i, j)
 
-        type(grid), intent(IN) :: g
+        type(grid), intent(IN) :: g 
         type(phys), intent(IN) :: p
         type(num), intent(IN) :: n
         real :: advection, qeo, qns, Sx, Sy
@@ -197,27 +197,37 @@ contains
 
 
         if (g%u(i,j) > 0) then
-            qeo = qeo + Sy * g%u(i,j) * g%C(i-1,j)
+            if (i >1) then
+                qeo = qeo + Sy * g%u(i,j) * g%C(i-1,j)
+            end if
         else 
             qeo = qeo+ Sy * g%u(i,j) * g%C(i,j)
         end if
 
-        if (g%u(i+1,j) > 0) then 
-            qeo = qeo - Sy * g%u(i+1,j) * g%C(i,j)
-        else 
-            qeo = qeo- Sy * g%u(i+1,j) * g%C(i+1,j)
+
+        if (i < n%nx) then
+            if (g%u(i+1,j) > 0) then 
+            
+                qeo = qeo - Sy * g%u(i+1,j) * g%C(i,j)
+            else 
+                qeo = qeo- Sy * g%u(i+1,j) * g%C(i+1,j)
+            end if
         end if
 
         if (g%v(i,j) > 0) then
-            qns = qns + Sx * g%v(i,j) * g%c(i,j-1)
+            if (j >1) then
+                qns = qns + Sx * g%v(i,j) * g%c(i,j-1)
+            end if
         else
             qns = qns + Sx * g%v(i,j) * g%c(i,j)
         end if
 
-        if (g%v(i,j+1) > 0) then
-            qns = qns-Sx * g%v(i,j+1) * g%c(i,j)
-        else 
-            qns = qns-sX * g%v(i,j+1) * g%c(i,j+1)
+        if (j < n%ny) then
+            if (g%v(i,j+1) > 0) then
+                qns = qns-Sx * g%v(i,j+1) * g%c(i,j)
+            else 
+                qns = qns-sX * g%v(i,j+1) * g%c(i,j+1)
+            end if
         end if
 
         advection = qeo + qns
@@ -226,8 +236,8 @@ contains
     end function advection
 
     function diffusion(g, n, p, i, j)
-
-        type(grid), intent(IN) :: g
+        
+        type(grid), intent(IN) :: g 
         type(phys), intent(IN) :: p
         type(num), intent(IN) :: n
         real :: diffusion, qeo, qns, Sx, Sy
@@ -239,37 +249,40 @@ contains
         qns = 0
 
 
-
+        if (i >1) then
             qeo = qeo +Sy * ( g%C(i-1,j) - g%C(i,j) )/Sx
+        end if
+
+        if (i < n%nx -1) then 
             qeo = qeo +Sy * (g%c(i+1,j) - g%C(i,j))/Sx
-
+        end if
+        
+        if (j > 1) then
             qns = qns +Sx * ( g%c(i, j-1) - g%c(i,j))/Sy
+        end if 
+        if (j< n%ny - 1) then   
             qns =qns + Sx * (g%c(i, j+1) - g%c(i,j))/Sy
-
+        end if
 
         diffusion = qeo + qns 
 
     end function diffusion
 
 
-    !subroutine calc_c_t_dt(c_t_dt, c_t, delta_t, delta_x, delta_y, p, n) !obligé de faire plein de subroutine, une pour chaque terme pcq blablabla ils sont relou les profs
-    !    real, dimension(:,:), intent(OUT) :: c_t_dt
-    !    real, dimension(:,:), intent(IN) :: c_t
-    !    type(phys), intent(IN) :: p
-    !    type(num), intent(IN) :: n
-    !    real, intent(IN) :: delta_t, delta_x, delta_y
-    !    integer :: i, j
-    !
-    !    do i=1,n%nx
-    !        do j=1,n%ny 
-    !            if (u(i,j) > 0) then
-    !                c_t_dt(i,j) = c_t(i,j) - delta_t/delta_x * u(i,j) * (c_t(i,j) - c_t(i-1,j)) + delta_t/delta_y * p%kappa * (c_t(i,j+1) - 2*c_t(i,j) + c_t(i,j-1))
-    !            else
-    !                c_t_dt(i,j) = c_t(i,j) + delta_t/delta_x * u(i,j) * (c_t(i+1,j) - c_t(i,j))
-    !            end if
-    !        end do
-    !    end do
-    !
-    !end subroutine c_t_dt
+    subroutine calc_c_t_dt(c_t_dt, g, delta_t, Vol, p, n) !obligé de faire plein de subroutine, une pour chaque terme pcq blablabla ils sont relou les profs
+        real, dimension(:,:), intent(OUT) :: c_t_dt
+        type(grid), intent(IN) :: g
+        type(phys), intent(IN) :: p
+        type(num), intent(IN) :: n
+        real, intent(IN) :: delta_t, Vol 
+        integer :: i, j
+    
+        do i=1,n%nx
+            do j=1,n%ny 
+                    c_t_dt(i,j) = g%C(i,j) + delta_t/Vol * advection(g, n, p, i, j) + delta_t * p%kappa * diffusion(g, n, p, i, j)
+            end do
+        end do
+    
+    end subroutine calc_c_t_dt
 
 end module sousprog
