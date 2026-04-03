@@ -1,10 +1,11 @@
 FC = gfortran
 OPT = -g -O0 -fbounds-check
-
+DOSSIER = test
 OBJ = m_type.o prog.o sousprog.o VTSWriter.o
 
 run : clean prog.exe
-	./prog.exe
+	mkdir -p $(DOSSIER)
+	./prog.exe $(DOSSIER)
 prog.exe :	$(OBJ)
 	$(FC) $(OPT) $(OBJ) -o prog.exe
 
@@ -21,5 +22,5 @@ VTSWriter.o :	VTSWriter.f90
 	$(FC) $(OPT) VTSWriter.f90 -c
 
 clean :
-	/bin/rm -f $(OBJ) *.mod *.exe *.o *.vts *.pvd
+	/bin/rm -f $(OBJ) *.mod *.exe *.o *.vts *.pvd $(DOSSIER)/*.vts $(DOSSIER)/*.pvd
 

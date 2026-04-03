@@ -35,13 +35,14 @@ subroutine VTSWriter(Time,Step,nx,ny,x,y,T,U,V,opt, dossier)
   character(len=*), intent(in)            :: dossier
 
   character(100) :: num2char
-  character(400) :: FileName, formatperso
+  character(200) :: FileName, formatperso, Dossier_FileName
   integer :: i, j
 
   !  --- Ecriture d un fichier temporel au format paraview  ---
   write(num2char,'(i9.9)') Step
-  FileName = trim(dossier)//'/sol_'//trim(num2char)//'.vts'
-  open(8,file=FileName)
+  Dossier_FileName = trim(dossier)//'/sol_'//trim(num2char)//'.vts'
+  FileName = 'sol_'//trim(num2char)//'.vts'
+  open(8,file=Dossier_FileName)
   write(num2char,*) 3*(nx+1)*(ny+1)
   formatperso = '('//trim(num2char)//'(E15.9,1x))'
   write(8,'(a)') '<?xml version="1.0"?>'
