@@ -53,6 +53,7 @@ contains
         print*, time 
         print*, step
 
+
     end subroutine writer
 
     function u(i, j, p, n)
@@ -284,5 +285,50 @@ contains
         end do
     
     end subroutine calc_c_t_dt
+
+    function diffusion(i ,j, c_t_dt, p, n, d_t)
+        real, dimension(:,:), intent(IN) :: c_t_dt
+        type(phys), intent(IN) :: p
+        type(num), intent(IN) :: n
+        integer, intent(IN) :: i, j
+        real, intent(IN) :: d_t
+        real :: diffusion
+
+        if (i == 1 .or. i == n%nx .or. j == 1 .or. j == n%ny) then
+            diffusion = 0
+            return
+        end if
+
+        diffusion = d_t * p%kappa * (c_t_dt(i+1,j) - 2*c_t_dt(i,j) + c_t_dt(i-1,j)) / (p%l/real(n%nx))**2 + p%kappa *&
+         (c_t_dt(i,j+1) - 2*c_t_dt(i,j) + c_t_dt(i,j-1)) / (p%l/real(2*n%ny))**2
+    
+    end function diffusion
+
+    function advection(i, j, g, n, p, delta_x, delta_y)  !integrale sur S de u*c*ds 
+        type(grid), intent(IN) :: g
+        type(num), intent(IN) :: n
+        type(phys), intent(IN) :: p
+        integer, intent(IN) :: i, j
+        real, intent(IN) :: delta_x, delta_y
+        real :: advection
+
+        if (i == 1 .or. i == n%nx .or. j == 1 .or. j == n%ny) then
+            advection = 0
+            return
+        end if
+
+        if (g%u(i,j) >= 0) then !nord et sud
+            advection = (g%c(i,j) - g%c(i,j-1)) * g%v(i,j) * delta_x
+        else
+            advection = (g%c(i,j+1) - g%c(i,j)) * g%v(i,j) * delta_x
+        end if
+
+        if (g%v(i,j) >= 0) then !est et ouest
+            advection = advection + (g%c(i,j) - g%c(i-1,j)) * g%u(i,j) * delta_y
+        else
+            advection = advection + (g%c(i+1,j) - g%c(i,j)) * g%u(i,j) * delta_y
+        end if
+
+    end function advection
 
 end module sousprog

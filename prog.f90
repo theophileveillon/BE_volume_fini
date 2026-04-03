@@ -5,6 +5,7 @@ program main
     type(noueur) :: noeud
     type(phys) :: p
     type(num) :: n
+
     type(grid) :: g
     real, dimension(:,:), allocatable :: C_futur
     real :: d_t, Time, Vol, Tf
@@ -13,13 +14,17 @@ program main
 
 
 
+    integer :: nb_ite, i, j, t, Step
+
     call reader('donnees.dat', p, n)
+
 
     allocate(g%c(n%nx, n%ny))
     allocate(C_futur(n%nx, n%ny))
 
     allocate(g%u(n%nx +1 , n%ny))
     allocate(g%v(n%nx, n%ny +1))
+
 
     allocate(noeud%x(n%nx +1, n%ny +1))
     allocate(noeud%y(n%nx +1, n%ny +1))
@@ -29,14 +34,16 @@ program main
     call init_v(g%u, g%v, p, n)
     call init_noeud(g, p, n, noeud)
     call delta_t(g, p, n, d_t)
+
 !    print*, n%nx, n%ny, n%dt
 !    print*, p%kappa
-!    print*, g%c
+!    print*, g_t%c
 !    print*, "c'est en cours" 
-!    print*, g%u
+!    print*, g_t%u
 !    print*, "c'est fini" 
-!    print*, g%v
+!    print*, g_t%v
 !    print*, "on print les coordonnées des noeuds"
+
 
 
     Time = 0.
@@ -56,5 +63,6 @@ program main
 
 
     
+
 
 end program main

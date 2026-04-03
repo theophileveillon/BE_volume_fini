@@ -8,7 +8,7 @@ MODULE m_type
 
 	Type noueur
 		real, dimension(:,:), allocatable :: x, y
-	end type noueur
+	end Type noueur
 
 
 	Type num
@@ -18,7 +18,7 @@ MODULE m_type
 
 	Type grid
 		real, dimension(:,:), allocatable :: c, u, v
-	end type grid
+	end Type grid
 
 
 
