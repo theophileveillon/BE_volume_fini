@@ -61,7 +61,7 @@ contains
         type(phys), intent(IN) :: p
         type(num), intent(IN) :: n 
 
-        u = p%alpha * sin(acos(-1.0)*2*i/n%nx) * cos(acos(-1.0)*j/n%ny)
+        u = p%alpha 
     end function u
 
     function v(i, j, p, n)
@@ -69,7 +69,7 @@ contains
         integer, intent(IN) :: i, j
         type(phys), intent(IN) :: p
         type(num), intent(IN) :: n 
-        v = -p%alpha * cos(acos(-1.0)*2*i/n%nx) * sin(acos(-1.0)*j/n%ny)
+        v = 0
     end function v
 
     function c1(c0)
@@ -89,8 +89,8 @@ contains
 
         do i=1,n%nx
             do j=1,n%ny 
-                c(i,j)=c1(p%c0) +1./2. * (p%c0 - c1(p%c0)) * (1.+ erf(( 1./2. * sqrt( ( real(i) * p%l/real(n%nx) - p%l/2. )**2 +&
-                (real(j) * p%l/(real(2*n%ny)) - p%l/4. )**2 ) -p%d/2. ) / delta ))
+!                c(i,j)=c1(p%c0) +1./2. * (p%c0 - c1(p%c0)) * (1.+ erf(( 1./2. * sqrt( ( real(i) * p%l/real(n%nx) - p%l/2. )**2 +&
+!                (real(j) * p%l/(real(2*n%ny)) - p%l/4. )**2 ) -p%d/2. ) / delta ))
             end do
         end do
     end subroutine init_c
