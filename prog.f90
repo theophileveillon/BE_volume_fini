@@ -9,7 +9,7 @@ program main
     real, dimension(:,:), allocatable :: C_futur
     real :: d_t, Time, Vol, Tf
 
-    integer :: nb_ite, i, j, Step
+    integer :: i, j, Step
 
 
 
@@ -40,13 +40,12 @@ program main
 
 
     Time = 0.
-    nb_ite = 1000
-    Tf = (nb_ite-1) * n%dt
+    Tf = (n%nb_ite-1) * n%dt
     Step = 1
 
 
-    do i = 1, nb_ite
-        call writer(n, p, g, noeud, Time, Tf, Step)
+    do i = 1, n%nb_ite
+        call writer(n, g, noeud, Time, Tf, Step)
         call calc_c_t_dt(C_futur, g, d_t, Vol, p, n) 
         g%c = C_futur
         Time = Time + n%dt

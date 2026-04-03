@@ -12,7 +12,7 @@ MODULE m_type
 
 
 	Type num
-		integer :: nx, ny, CLF
+		integer :: nx, ny, CLF, nb_ite
 		real :: dt, R
 	End Type num
 

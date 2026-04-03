@@ -1,3 +1,0 @@
-Le maillages, on passe de diviser la longueur en y d'indice ij par 2 à multiplier la longueur en x par 2
-Ça semble plus cohérent
-

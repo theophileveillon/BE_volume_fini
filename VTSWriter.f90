@@ -1,5 +1,5 @@
 !******************
-subroutine VTSWriter(Time,Step,nx,ny,x,y,T,U,V,opt)
+subroutine VTSWriter(Time,Step,nx,ny,x,y,T,U,V,opt, dossier)
 !-----------------------------------------------------------------------------#
 !  Time    : Reel, temps physique                                             #
 !  Step    : Entier, pas de temps = numero dans le nom de fichier,            #
@@ -32,14 +32,15 @@ subroutine VTSWriter(Time,Step,nx,ny,x,y,T,U,V,opt)
   real, dimension(nx,ny+1)  , intent(in) :: V
   real, dimension(nx,ny)    , intent(in) :: T
   character(3), intent(in)               :: opt
+  character(len=*), intent(in)            :: dossier
 
   character(100) :: num2char
-  character(200) :: FileName, formatperso
+  character(400) :: FileName, formatperso
   integer :: i, j
 
   !  --- Ecriture d un fichier temporel au format paraview  ---
   write(num2char,'(i9.9)') Step
-  FileName = 'sol_'//trim(num2char)//'.vts'
+  FileName = trim(dossier)//'/sol_'//trim(num2char)//'.vts'
   open(8,file=FileName)
   write(num2char,*) 3*(nx+1)*(ny+1)
   formatperso = '('//trim(num2char)//'(E15.9,1x))'
@@ -85,12 +86,12 @@ subroutine VTSWriter(Time,Step,nx,ny,x,y,T,U,V,opt)
 
   ! - Remplissage du fichier "Collection" determinant l evolution temporelle -
   if (opt == 'ini' ) then
-    open(10,file='sol.pvd')
+    open(10,file=trim(dossier)//'/sol.pvd')
     write(10,'(a)') '<?xml version="1.0"?>'
     write(10,*) '<VTKFile type="Collection" version="0.1" format="ascii">'
     write(10,*) '<Collection>'
   else
-    open(10,file='sol.pvd',position='append')
+    open(10,file=trim(dossier)//'/sol.pvd',position='append')
   end if
   if (Step >= 0) write(10,*) '<DataSet timestep="',Time,'" group="" part="0" file="',trim(FileName),'"/>'
   if ( opt == 'end') then

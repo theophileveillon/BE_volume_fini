@@ -20,13 +20,13 @@ contains
         read(10, *)  n%dt
         read(10, *)  n%CLF
         read(10, *)  n%R
+        read(10, *)  n%nb_ite
 
         close(10)
         
     end subroutine reader
 
-    subroutine writer(n, p, g, noeud, Time, Tf, Step)
-        type(phys), intent(IN) :: p
+    subroutine writer(n, g, noeud, Time, Tf, Step)
         type(num), intent(IN) :: n
         type(grid), intent(IN) :: g
         type(noueur), intent(IN) :: noeud
@@ -34,24 +34,35 @@ contains
         real, intent(IN) :: Time, Tf
         integer, intent(IN) :: Step
 
+        !pour l'affichage
+        integer :: nbar, nfilled, pct
+        character(len=50) :: bar
+
+        nbar     = len(bar)
 
         if (Time == 0.) then
 
-            call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'ini' )
+            call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'ini', 'test' )
         else
-            if (Time == Tf) then
-                call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'end') 
+            if (abs(Time - Tf) < 1.e-6*Tf) then
+                call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'end', 'test' )
+                pct     = int(100.0*Time/Tf + 0.5)
+                nfilled = int(real(pct)/100.0 * nbar)
+                bar     = repeat("=", nfilled)//repeat(" ", nbar-nfilled)
+                write(*,'(a,1x,a," ",i3,"%",a)', advance='no') &
+                        achar(13), "["//bar//"]", pct, ""
+                call flush(6)
+                write(*,*)
             else
-                call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'int')
-
+                call VTSWriter(Time, Step, n%nx, n%ny, noeud%x, noeud%y, g%c, g%u, g%v, 'int', 'test' )
+                pct = int(100.0*Time/Tf + 0.5)
+                nfilled = int(real(pct)/100.0 * nbar)
+                bar = repeat("=", nfilled)//repeat(" ", nbar-nfilled)
+                write(*,'(a,1x,a," ",i3,"%",a)', advance='no')  &
+                    achar(13), "["//bar//"]", pct, ""
+                call flush(6)
             end if
         end if
-            
-        
-
-
-        print*, time 
-        print*, step
 
     end subroutine writer
 

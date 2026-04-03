@@ -8,3 +8,4 @@
 1           dt
 1           CLF (nombre de Courant-Friedrichs-Lewy)
 0.5         R (nombre de Fourier)
+20          nb_ite

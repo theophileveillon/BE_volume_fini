@@ -21,5 +21,5 @@ VTSWriter.o :	VTSWriter.f90
 	$(FC) $(OPT) VTSWriter.f90 -c
 
 clean :
-	/bin/rm -f $(OBJ) *.mod *.exe *.o
+	/bin/rm -f $(OBJ) *.mod *.exe *.o *.vts *.pvd
 

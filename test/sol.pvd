@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+ <VTKFile type="Collection" version="0.1" format="ascii">
+ <Collection>
+ <DataSet timestep="   0.00000000     " group="" part="0" file="test/sol_000000001.vts"/>
+ <DataSet timestep="   1.00000000     " group="" part="0" file="test/sol_000000002.vts"/>
+ <DataSet timestep="   2.00000000     " group="" part="0" file="test/sol_000000003.vts"/>
+ <DataSet timestep="   3.00000000     " group="" part="0" file="test/sol_000000004.vts"/>
+ <DataSet timestep="   4.00000000     " group="" part="0" file="test/sol_000000005.vts"/>
+ <DataSet timestep="   5.00000000     " group="" part="0" file="test/sol_000000006.vts"/>
+ <DataSet timestep="   6.00000000     " group="" part="0" file="test/sol_000000007.vts"/>
+ <DataSet timestep="   7.00000000     " group="" part="0" file="test/sol_000000008.vts"/>
+ <DataSet timestep="   8.00000000     " group="" part="0" file="test/sol_000000009.vts"/>
+ <DataSet timestep="   9.00000000     " group="" part="0" file="test/sol_000000010.vts"/>
+ <DataSet timestep="   10.0000000     " group="" part="0" file="test/sol_000000011.vts"/>
+ <DataSet timestep="   11.0000000     " group="" part="0" file="test/sol_000000012.vts"/>
+ <DataSet timestep="   12.0000000     " group="" part="0" file="test/sol_000000013.vts"/>
+ <DataSet timestep="   13.0000000     " group="" part="0" file="test/sol_000000014.vts"/>
+ <DataSet timestep="   14.0000000     " group="" part="0" file="test/sol_000000015.vts"/>
+ <DataSet timestep="   15.0000000     " group="" part="0" file="test/sol_000000016.vts"/>
+ <DataSet timestep="   16.0000000     " group="" part="0" file="test/sol_000000017.vts"/>
+ <DataSet timestep="   17.0000000     " group="" part="0" file="test/sol_000000018.vts"/>
+ <DataSet timestep="   18.0000000     " group="" part="0" file="test/sol_000000019.vts"/>
+ <DataSet timestep="   19.0000000     " group="" part="0" file="test/sol_000000020.vts"/>
+ </Collection>
+ </VTKFile>
