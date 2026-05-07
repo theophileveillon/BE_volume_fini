@@ -67,12 +67,8 @@ contains
         type(phys), intent(IN) :: p
         type(grid), intent(IN) :: g
         integer, intent(IN) :: init
-        type(num), intent(IN) :: n
-        type(phys), intent(IN) :: p
-        type(grid), intent(IN) :: g
-        integer, intent(IN) :: init
 
-        integer :: j
+
         integer :: j
 
         if (init == 0) then
@@ -166,7 +162,6 @@ contains
     end subroutine init_c
 
     subroutine init_c_horizontale(c ,p ,n)
-    subroutine init_c_horizontale(c ,p ,n)
         
         real, dimension(:,:), intent(INOUT) :: c
         type(phys), intent(IN) :: p
@@ -183,9 +178,7 @@ contains
             end do
         end do
     end subroutine init_c_horizontale
-    end subroutine init_c_horizontale
 
-    subroutine init_c_verticale(c ,p ,n)
     subroutine init_c_verticale(c ,p ,n)
         
         real, dimension(:,:), intent(INOUT) :: c
@@ -202,7 +195,6 @@ contains
                 end if
             end do
         end do
-    end subroutine init_c_verticale
     end subroutine init_c_verticale
 
     subroutine init_v(u_g, v_g, p, n) 
