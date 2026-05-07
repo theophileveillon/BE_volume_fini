@@ -8,18 +8,23 @@ program main
     type(grid) :: g
     real, dimension(:,:), allocatable :: C_futur
     real :: delta_t, time, Vol, Tf
+    character(len=256), dimension(5) :: modes_list
+    character(len=256) :: mode
+    character(len=256) :: dossier
+    logical :: found
 
     integer :: i, Step
 
     ! recupere le nom du dossier ou on veut stocker les resultats 
-    character(len=256) :: dossier
     call get_command_argument(1, dossier)
     dossier = trim(dossier)
 
     ! recupere le mode de calcul et test s'il est legitime
-    character(len=256), dimension(5) :: modes_list
-    modes_list = ['classique','advection_pure_verticale', 'advecion_pure_horizontale', 'diffusion_pure_verticale', 'diffusion_pure_horizontale']
-    character(len=256) :: mode
+    modes_list(1) = 'classique'
+    modes_list(2) = 'advection_pure_verticale'
+    modes_list(3) = 'advection_pure_horizontale'
+    modes_list(4) = 'diffusion_pure_verticale'
+    modes_list(5) = 'diffusion_pure_horizontale'    
     call get_command_argument(2, mode)
     mode = trim(mode)
     found = .false.
@@ -29,7 +34,7 @@ program main
             exit
         end if
     end do
-    if (NOT found) then
+    if (.not. found) then
         print *, "argument 2 (mode) must be one of the following: "
         do i = 1, size(modes_list)
             print *, " - ", trim(modes_list(i))
