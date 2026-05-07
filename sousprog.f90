@@ -61,34 +61,34 @@ contains
         end if
     end subroutine writer
 
-subroutine writer_x_L_2(n, p, g, init)
+    subroutine writer_x_L_2(n, p, g, init)
 
-    type(num), intent(IN) :: n
-    type(phys), intent(IN) :: p
-    type(grid), intent(IN) :: g
-    integer, intent(IN) :: init
+        type(num), intent(IN) :: n
+        type(phys), intent(IN) :: p
+        type(grid), intent(IN) :: g
+        integer, intent(IN) :: init
 
-    integer :: j
+        integer :: j
 
-    if (init == 0) then
-        open(9, file = 'x_L_2.dat', status = 'unknown')
-        write(9, *) n%nx, n%ny, p%L/2, p%L, n%dt, n%nb_ite, p%kappa
-        close(9)
-    else    
-        open(9, file = 'x_L_2.dat', status = 'old', position = 'append')
-        do j = 1, n%ny
-            write(9, '(E12.5)', advance="no") g%c(n%nx/2, j)
-            if (j < n%ny) then
-                write(9, '(A)', advance="no") ';'
-            end if
-        end do
-        write(9, *)
-        close(9)
-    end if
+        if (init == 0) then
+            open(9, file = 'x_L_2.dat', status = 'unknown')
+            write(9, *) n%nx, n%ny, p%L/2, p%L, n%dt, n%nb_ite, p%kappa
+            close(9)
+        else    
+            open(9, file = 'x_L_2.dat', status = 'old', position = 'append')
+            do j = 1, n%ny
+                write(9, '(E12.5)', advance="no") g%c(n%nx/2, j)
+                if (j < n%ny) then
+                    write(9, '(A)', advance="no") ';'
+                end if
+            end do
+            write(9, *)
+            close(9)
+        end if
 
-end subroutine writer_x_L_2
+    end subroutine writer_x_L_2
 
-subroutine writer_y_L(n, p, g, init)
+    subroutine writer_y_L(n, p, g, init)
 
     type(num), intent(IN) :: n
     type(phys), intent(IN) :: p
@@ -113,7 +113,7 @@ subroutine writer_y_L(n, p, g, init)
         close(9)
     end if
 
-end subroutine writer_y_L
+    end subroutine writer_y_L
 
     function u(i, j, p, n)
         
@@ -160,7 +160,7 @@ end subroutine writer_y_L
         end do
     end subroutine init_c
 
-    subroutine init_c_diff_pure_horizontale(c ,p ,n)
+    subroutine init_c_horizontale(c ,p ,n)
         
         real, dimension(:,:), intent(INOUT) :: c
         type(phys), intent(IN) :: p
@@ -176,9 +176,9 @@ end subroutine writer_y_L
                 end if
             end do
         end do
-    end subroutine init_c_diff_pure_horizontale
+    end subroutine init_c_horizontale
 
-    subroutine init_c_diff_pure_verticale(c ,p ,n)
+    subroutine init_c_verticale(c ,p ,n)
         
         real, dimension(:,:), intent(INOUT) :: c
         type(phys), intent(IN) :: p
@@ -194,7 +194,7 @@ end subroutine writer_y_L
                 end if
             end do
         end do
-    end subroutine init_c_diff_pure_verticale
+    end subroutine init_c_verticale
 
     subroutine init_v(u_g, v_g, p, n) 
        
@@ -383,5 +383,68 @@ end subroutine writer_y_L
         end do
 
     end subroutine calc_c_t_dt
+
+
+    subroutine esperance(Stat, C, n, iteactuelle)
+        real, dimension(:,:), intent(IN) :: C
+        type(num), intent(IN) :: n
+        type(statistique), intent(INOUT) :: Stat
+        integer, intent(IN) :: iteactuelle
+        integer :: i, j
+        real :: moyenne, vol
+
+        moyenne = 0
+        vol = n%nx * n%ny
+        
+        do i = 1, n%nx
+            do j = 1, n%ny
+                moyenne = moyenne + c(i,j)/vol
+            end do
+        end do
+
+        Stat%E(iteactuelle) = moyenne
+    end subroutine esperance
+
+    subroutine variance(Stat, c, n, iteactuelle)
+        real, dimension(:,:), intent(IN) :: C
+        type(num), intent(IN) :: n
+        type(statistique), intent(INOUT) :: Stat
+        integer, intent(IN) :: iteactuelle
+        integer :: i, j
+        real :: var, vol
+
+        var = 0
+        vol = n%nx * n%ny
+        do i = 1, n%nx
+            do j = 1, n%ny
+
+            var = var + (c(i,j) - Stat%E(iteactuelle)) ** 2 /vol
+            end do
+        end do
+        
+        Stat%var(iteactuelle) = var
+    end subroutine variance
+
+    subroutine covariance(Stat, c_i1, c_i2, m_i1, m_i2, n, iteactuelle)
+        real, intent(IN) :: m_i1, m_i2
+        real, dimension(:,:), intent(IN) :: c_i1, c_i2
+        type(num), intent(IN) :: n
+        type(statistique), intent(INOUT) :: Stat
+        integer, intent(IN) :: iteactuelle
+        integer :: i, j
+        real :: covar, vol
+
+        covar = 0
+        vol = n%nx * n%ny
+
+        do i = 1, n%nx
+            do j = 1, n%ny
+                covar = covar + (c_i1(i,j) - m_i1) *  (c_i2(i,j) - m_i2) / vol
+            end do 
+        end do
+
+        Stat%covar(iteactuelle) = covar
+
+    end subroutine covariance
 
 end module sousprog
