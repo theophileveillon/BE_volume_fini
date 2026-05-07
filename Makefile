@@ -2,7 +2,7 @@ FC = gfortran
 OPT = -g -O0 -fbounds-check
 DOSSIER = tests
 OBJ = m_type.o prog.o sousprog.o VTSWriter.o
-MODE_LIST = classique advection_pure_verticale advection_pure_horizontale diffusion_pure_verticale diffusion_pure_horizontale
+MODE_LIST = classique horizontale verticale
 MODE = classique
 
 run : clean prog.exe

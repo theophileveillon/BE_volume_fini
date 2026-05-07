@@ -160,7 +160,7 @@ end subroutine writer_y_L
         end do
     end subroutine init_c
 
-    subroutine init_c_diff_pure_horizontale(c ,p ,n)
+    subroutine init_c_horizontale(c ,p ,n)
         
         real, dimension(:,:), intent(INOUT) :: c
         type(phys), intent(IN) :: p
@@ -176,9 +176,9 @@ end subroutine writer_y_L
                 end if
             end do
         end do
-    end subroutine init_c_diff_pure_horizontale
+    end subroutine init_c_horizontale
 
-    subroutine init_c_diff_pure_verticale(c ,p ,n)
+    subroutine init_c_verticale(c ,p ,n)
         
         real, dimension(:,:), intent(INOUT) :: c
         type(phys), intent(IN) :: p
@@ -194,7 +194,7 @@ end subroutine writer_y_L
                 end if
             end do
         end do
-    end subroutine init_c_diff_pure_verticale
+    end subroutine init_c_verticale
 
     subroutine init_v(u_g, v_g, p, n) 
        
