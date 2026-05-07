@@ -2,13 +2,15 @@ FC = gfortran
 OPT = -g -O0 -fbounds-check
 DOSSIER = tests
 OBJ = m_type.o prog.o sousprog.o VTSWriter.o
+# mode =(classique | advection_pure_verticale | advecion_pure_horizontale | diffusion_pure_verticale | diffusion_pure_horizontale)
+MODE = classique
 
 python : 
 	python3 diffusion_comparaison.py 500
 
 run : clean prog.exe
 	mkdir -p $(DOSSIER)
-	./prog.exe $(DOSSIER)
+	./prog.exe $(DOSSIER) $(MODE)
 
 prog.exe :	$(OBJ)
 	$(FC) $(OPT) $(OBJ) -o prog.exe
