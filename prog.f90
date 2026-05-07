@@ -8,37 +8,58 @@ program main
     type(grid) :: g
     real, dimension(:,:), allocatable :: C_futur
     real :: delta_t, time, Vol, Tf
-    character(len=256), dimension(5) :: modes_list
-    character(len=256) :: mode
-    character(len=256) :: dossier
-    logical :: found
-
     integer :: i, Step
 
-    ! recupere le nom du dossier ou on veut stocker les resultats 
+    !pour le makefile
+    integer, parameter         :: MAX_MODES = 20
+    character(len=256)         :: dossier
+    character(len=512)         :: mode_list_raw
+    character(len=64)          :: mode_list(MAX_MODES)
+    character(len=64)          :: mode
+    integer                    :: n_modes, i_modes, pos_modes, next_modes
+    logical                    :: found_modes
+
+    ! Récupère le dossier (arg 1)
     call get_command_argument(1, dossier)
     dossier = trim(dossier)
 
-    ! recupere le mode de calcul et test s'il est legitime
-    modes_list(1) = 'classique'
-    modes_list(2) = 'advection_pure_verticale'
-    modes_list(3) = 'advection_pure_horizontale'
-    modes_list(4) = 'diffusion_pure_verticale'
-    modes_list(5) = 'diffusion_pure_horizontale'    
-    call get_command_argument(2, mode)
-    mode = trim(mode)
-    found = .false.
-    do i = 1, size(modes_list)
-        if (trim(modes_list(i)) == trim(mode)) then
-            found = .true.
+    ! recuperation des modes
+    call get_command_argument(2, mode_list_raw)   ! la liste entière
+    call get_command_argument(3, mode)
+
+    ! Découpage de mode_list_raw sur les espaces
+    n_modes = 0
+    mode_list_raw = adjustl(mode_list_raw)
+    pos_modes = 1
+    do while (pos_modes <= len_trim(mode_list_raw))
+        next_modes = index(mode_list_raw(pos_modes:), ' ')
+        if (next_modes == 0) then
+            n_modes = n_modes + 1
+            mode_list(n_modes) = trim(mode_list_raw(pos_modes   :))
+            exit
+        end if
+        if (next_modes > 1) then
+            n_modes = n_modes + 1
+            mode_list(n_modes) = mode_list_raw(pos_modes:pos_modes+next_modes-2)
+        end if
+        pos_modes = pos_modes + next_modes
+    end do
+
+    ! Vérifie que le mode est légitime
+    found_modes = .false.
+    do i_modes = 1, size(mode_list)
+        if (trim(mode_list(i_modes)) == trim(mode)) then
+            found_modes = .true.
             exit
         end if
     end do
-    if (.not. found) then
-        print *, "argument 2 (mode) must be one of the following: "
-        do i = 1, size(modes_list)
-            print *, " - ", trim(modes_list(i))
+
+    if (.not. found_modes) then
+        print *, "argument MODE doit être l'un des suivants :"
+        do i_modes = 1, size(mode_list)
+            print *, " - ", trim(mode_list(i_modes))
         end do
+        stop 1
     end if
 
 
@@ -78,6 +99,7 @@ program main
             Step = Step + 1
         end do
     end if
+
 
 
 
