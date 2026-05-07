@@ -2,12 +2,17 @@ FC = gfortran
 OPT = -g -O0 -fbounds-check
 DOSSIER = tests
 OBJ = m_type.o prog.o sousprog.o VTSWriter.o
-MODE_LIST = classique horizontale verticale
-MODE = classique
+MODE_LIST = classique horizontale verticale horizontale_python verticale_python
+MODE = horizontale_python
 
 run : clean prog.exe
 	mkdir -p $(DOSSIER)
+ifeq ($(findstring python,$(MODE)),python)
+	./prog.exe $(DOSSIER) "$(MODE_LIST)" $(MODE);
+	python3 diffusion_comparaison.py 500;
+else
 	./prog.exe $(DOSSIER) "$(MODE_LIST)" $(MODE)
+endif
 
 prog.exe :	$(OBJ)
 	$(FC) $(OPT) $(OBJ) -o prog.exe

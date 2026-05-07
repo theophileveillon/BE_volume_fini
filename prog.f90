@@ -137,6 +137,27 @@ program main
             Step = Step + 1
         end do
     end if
+    if (mode == 'horizontale_python') then
+        vol = 2* p%l/n%nx * p%l / n%ny
+        call init_c_horizontale(g%c, p, n)
+        
+        call calc_delta_t(g, p, n, delta_t)
+
+        ! boucle temporelle pour avoir C a chaque pas de temps
+        time = 0.
+        tf = (n%nb_ite-1) * n%dt
+        Step = 1
+
+        call writer_python_x_L(n, p, g, 0)
+        do i = 1, n%nb_ite
+            call writer(n, g, noeud, time, tf, Step, dossier)
+            call calc_c_t_dt(C_futur, g, delta_t, vol, p, n)
+            call writer_python_x_L(n, p, g, 1)
+            g%c = C_futur
+            time = time + n%dt
+            Step = Step + 1
+        end do
+    end if
 
 
 
