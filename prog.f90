@@ -6,7 +6,8 @@ program main
     type(phys) :: p
     type(num) :: n
     type(grid) :: g
-    real, dimension(:,:), allocatable :: C_futur
+    type(statistique) :: Stat
+    real, dimension(:,:), allocatable :: C_futur, C_precedent
     real :: delta_t, time, Vol, Tf
     integer :: i, Step
 
@@ -69,6 +70,8 @@ program main
     !initialise les tableaux et les paramètres du problème
     allocate(g%c(n%nx, n%ny))
     allocate(C_futur(n%nx, n%ny))
+    allocate(C_precedent(n%nx, n%ny))
+
 
     allocate(g%u(n%nx +1 , n%ny))
     allocate(g%v(n%nx, n%ny +1))
@@ -76,13 +79,55 @@ program main
     allocate(noeud%x(n%nx +1, n%ny +1))
     allocate(noeud%y(n%nx +1, n%ny +1))
 
+
+    allocate(Stat%E(n%nb_ite))
+    allocate(Stat%Var(n%nb_ite))
+    allocate(Stat%Covar(n%nb_ite))
+
+
     call init_v(g%u, g%v, p, n)
     call init_noeud(p, n, noeud)
+    C_precedent = g%c
+
 
     if (mode == 'classique') then
 
         vol = 2* p%l/n%nx * p%l / n%ny
         call init_c(g%c, p, n)
+        
+        call calc_delta_t(g, p, n, delta_t)
+
+        ! boucle temporelle pour avoir C a chaque pas de temps
+        time = 0.
+        tf = (n%nb_ite-1) * n%dt
+        Step = 1
+        open(5, file="les resultats de statistiques")
+
+        do i = 1, n%nb_ite
+            call writer(n, g, noeud, time, tf, Step, dossier)
+            call calc_c_t_dt(C_futur, g, delta_t, vol, p, n)
+            g%c = C_futur
+            time = time + n%dt
+            Step = Step + 1
+
+            g%c = C_futur
+
+
+            call esperance(Stat, C_precedent, n, i)
+            call variance(Stat, C_precedent, n, i)
+
+            if (i > 1) then
+                call covariance(Stat, C_precedent, g%c, Stat%E(i-1), Stat%E(i), n, i)
+                write(5, *) Stat%E(i), Stat%Var(i), Stat%covar(i)
+
+            end if
+            C_precedent = g%c
+
+        end do
+
+            if (mode == 'verticale') then
+        vol = 2* p%l/n%nx * p%l / n%ny
+        call init_c_verticale(g%c, p, n)
         
         call calc_delta_t(g, p, n, delta_t)
 
@@ -159,6 +204,30 @@ program main
         end do
     end if
 
+
+
+    if (mode == 'horizontale') then
+        vol = 2* p%l/n%nx * p%l / n%ny
+        call init_c_horizontale(g%c, p, n)
+        
+        call calc_delta_t(g, p, n, delta_t)
+
+        ! boucle temporelle pour avoir C a chaque pas de temps
+        time = 0.
+        tf = (n%nb_ite-1) * n%dt
+        Step = 1
+
+        do i = 1, n%nb_ite
+            call writer(n, g, noeud, time, tf, Step, dossier)
+            call calc_c_t_dt(C_futur, g, delta_t, vol, p, n)
+            g%c = C_futur
+            time = time + n%dt
+            Step = Step + 1
+        end do
+    end if
+
+        close(5)
+    end if
 
 
 

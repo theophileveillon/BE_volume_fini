@@ -20,6 +20,8 @@ MODULE m_type
 		real, dimension(:,:), allocatable :: c, u, v
 	end type grid
 
-
+	Type statistique
+		real, dimension(:), allocatable :: E, Var, Covar
+	end type statistique
 
 END MODULE m_type

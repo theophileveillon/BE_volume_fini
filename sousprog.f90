@@ -67,7 +67,12 @@ contains
         type(phys), intent(IN) :: p
         type(grid), intent(IN) :: g
         integer, intent(IN) :: init
+        type(num), intent(IN) :: n
+        type(phys), intent(IN) :: p
+        type(grid), intent(IN) :: g
+        integer, intent(IN) :: init
 
+        integer :: j
         integer :: j
 
         if (init == 0) then
@@ -161,6 +166,7 @@ contains
     end subroutine init_c
 
     subroutine init_c_horizontale(c ,p ,n)
+    subroutine init_c_horizontale(c ,p ,n)
         
         real, dimension(:,:), intent(INOUT) :: c
         type(phys), intent(IN) :: p
@@ -177,7 +183,9 @@ contains
             end do
         end do
     end subroutine init_c_horizontale
+    end subroutine init_c_horizontale
 
+    subroutine init_c_verticale(c ,p ,n)
     subroutine init_c_verticale(c ,p ,n)
         
         real, dimension(:,:), intent(INOUT) :: c
@@ -194,6 +202,7 @@ contains
                 end if
             end do
         end do
+    end subroutine init_c_verticale
     end subroutine init_c_verticale
 
     subroutine init_v(u_g, v_g, p, n) 
@@ -383,5 +392,68 @@ contains
         end do
 
     end subroutine calc_c_t_dt
+
+
+    subroutine esperance(Stat, C, n, iteactuelle)
+        real, dimension(:,:), intent(IN) :: C
+        type(num), intent(IN) :: n
+        type(statistique), intent(INOUT) :: Stat
+        integer, intent(IN) :: iteactuelle
+        integer :: i, j
+        real :: moyenne, vol
+
+        moyenne = 0
+        vol = n%nx * n%ny
+        
+        do i = 1, n%nx
+            do j = 1, n%ny
+                moyenne = moyenne + c(i,j)/vol
+            end do
+        end do
+
+        Stat%E(iteactuelle) = moyenne
+    end subroutine esperance
+
+    subroutine variance(Stat, c, n, iteactuelle)
+        real, dimension(:,:), intent(IN) :: C
+        type(num), intent(IN) :: n
+        type(statistique), intent(INOUT) :: Stat
+        integer, intent(IN) :: iteactuelle
+        integer :: i, j
+        real :: var, vol
+
+        var = 0
+        vol = n%nx * n%ny
+        do i = 1, n%nx
+            do j = 1, n%ny
+
+            var = var + (c(i,j) - Stat%E(iteactuelle)) ** 2 /vol
+            end do
+        end do
+        
+        Stat%var(iteactuelle) = var
+    end subroutine variance
+
+    subroutine covariance(Stat, c_i1, c_i2, m_i1, m_i2, n, iteactuelle)
+        real, intent(IN) :: m_i1, m_i2
+        real, dimension(:,:), intent(IN) :: c_i1, c_i2
+        type(num), intent(IN) :: n
+        type(statistique), intent(INOUT) :: Stat
+        integer, intent(IN) :: iteactuelle
+        integer :: i, j
+        real :: covar, vol
+
+        covar = 0
+        vol = n%nx * n%ny
+
+        do i = 1, n%nx
+            do j = 1, n%ny
+                covar = covar + (c_i1(i,j) - m_i1) *  (c_i2(i,j) - m_i2) / vol
+            end do 
+        end do
+
+        Stat%covar(iteactuelle) = covar
+
+    end subroutine covariance
 
 end module sousprog
