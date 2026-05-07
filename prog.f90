@@ -72,7 +72,7 @@ program main
     if (mode == 'classique') then
 
         vol = 2* p%l/n%nx * p%l / n%ny
-        call init_c_diff_pure_horizontale(g%c, p, n)
+        call init_c(g%c, p, n)
         
         call calc_delta_t(g, p, n, delta_t)
 
@@ -124,7 +124,7 @@ program main
         end do
     end if
 
-    
+
     if (mode == 'horizontale') then
         vol = 2* p%l/n%nx * p%l / n%ny
         call init_c_horizontale(g%c, p, n)
