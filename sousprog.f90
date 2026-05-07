@@ -61,59 +61,59 @@ contains
         end if
     end subroutine writer
 
-subroutine writer_x_L_2(n, p, g, init)
+    subroutine writer_x_L_2(n, p, g, init)
 
-    type(num), intent(IN) :: n
-    type(phys), intent(IN) :: p
-    type(grid), intent(IN) :: g
-    integer, intent(IN) :: init
+        type(num), intent(IN) :: n
+        type(phys), intent(IN) :: p
+        type(grid), intent(IN) :: g
+        integer, intent(IN) :: init
 
-    integer :: j
+        integer :: j
 
-    if (init == 0) then
-        open(9, file = 'x_L_2.dat', status = 'unknown')
-        write(9, *) n%nx, n%ny, p%L/2, p%L, n%dt, n%nb_ite, p%kappa
-        close(9)
-    else    
-        open(9, file = 'x_L_2.dat', status = 'old', position = 'append')
-        do j = 1, n%ny
-            write(9, '(E12.5)', advance="no") g%c(n%nx/2, j)
-            if (j < n%ny) then
-                write(9, '(A)', advance="no") ';'
-            end if
-        end do
-        write(9, *)
-        close(9)
-    end if
+        if (init == 0) then
+            open(9, file = 'x_L_2.dat', status = 'unknown')
+            write(9, *) n%nx, n%ny, p%L/2, p%L, n%dt, n%nb_ite, p%kappa
+            close(9)
+        else    
+            open(9, file = 'x_L_2.dat', status = 'old', position = 'append')
+            do j = 1, n%ny
+                write(9, '(E12.5)', advance="no") g%c(n%nx/2, j)
+                if (j < n%ny) then
+                    write(9, '(A)', advance="no") ';'
+                end if
+            end do
+            write(9, *)
+            close(9)
+        end if
 
-end subroutine writer_x_L_2
+    end subroutine writer_x_L_2
 
-subroutine writer_y_L(n, p, g, init)
+    subroutine writer_y_L(n, p, g, init)
 
-    type(num), intent(IN) :: n
-    type(phys), intent(IN) :: p
-    type(grid), intent(IN) :: g
-    integer, intent(IN) :: init
+        type(num), intent(IN) :: n
+        type(phys), intent(IN) :: p
+        type(grid), intent(IN) :: g
+        integer, intent(IN) :: init
 
-    integer :: i
+        integer :: i
 
-    if (init == 0) then
-        open(9, file = 'y_L.dat', status = 'unknown')
-        write(9, *) n%nx, n%ny, p%L/2, p%L, n%dt, n%nb_ite, p%kappa
-        close(9)
-    else    
-        open(9, file = 'y_L.dat', status = 'old', position = 'append')
-        do i = 1, n%nx
-            write(9, '(E12.5)', advance="no") g%c(i, n%ny/2)
-            if (i < n%nx) then
-                write(9, '(A)', advance="no") ';'
-            end if
-        end do
-        write(9, *)
-        close(9)
-    end if
+        if (init == 0) then
+            open(9, file = 'y_L.dat', status = 'unknown')
+            write(9, *) n%nx, n%ny, p%L/2, p%L, n%dt, n%nb_ite, p%kappa
+            close(9)
+        else    
+            open(9, file = 'y_L.dat', status = 'old', position = 'append')
+            do i = 1, n%nx
+                write(9, '(E12.5)', advance="no") g%c(i, n%ny/2)
+                if (i < n%nx) then
+                    write(9, '(A)', advance="no") ';'
+                end if
+            end do
+            write(9, *)
+            close(9)
+        end if
 
-end subroutine writer_y_L
+    end subroutine writer_y_L
 
     function u(i, j, p, n)
         
