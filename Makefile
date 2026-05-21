@@ -2,17 +2,13 @@ FC = gfortran
 OPT = -g -O0 -fbounds-check
 DOSSIER = tests
 OBJ = m_type.o prog.o sousprog.o VTSWriter.o
-MODE_LIST = classique horizontale verticale horizontale_python verticale_python
-MODE = horizontale_python
+MODE_LIST = classique advection_pure_verticale advection_pure_horizontale advection_pure_verticale_CLF diffusion_pure_horizontale diffusion_pure_horizontale_R diffusion_pure_verticale diffusion_pure_verticale_R peclet_stationnaire convergence_maillage peclet_diffusion peclet_advection
+MODE ?= classique
 
 run : clean prog.exe
 	mkdir -p $(DOSSIER)
-ifeq ($(findstring python,$(MODE)),python)
 	./prog.exe $(DOSSIER) "$(MODE_LIST)" $(MODE);
-	python3 diffusion_comparaison.py 500;
-else
-	./prog.exe $(DOSSIER) "$(MODE_LIST)" $(MODE)
-endif
+	python3 plot_courbe.py $(MODE);
 
 prog.exe :	$(OBJ)
 	$(FC) $(OPT) $(OBJ) -o prog.exe

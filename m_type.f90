@@ -12,8 +12,8 @@ MODULE m_type
 
 
 	Type num
-		integer :: nx, ny, CLF, nb_ite
-		real :: dt, R
+		integer :: nx, ny, nb_ite
+		real :: CLF, dt, R, delta_x, delta_y, delta_t, pe
 	End Type num
 
 	Type grid
@@ -22,6 +22,8 @@ MODULE m_type
 
 	Type statistique
 		real, dimension(:), allocatable :: E, Var, Covar
+		real :: epsilon, conv_pourcentage
+		integer :: i_conv_var, i_conv_covar
 	end type statistique
 
 END MODULE m_type
