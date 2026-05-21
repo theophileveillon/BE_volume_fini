@@ -1,6 +1,6 @@
 FC = gfortran
 OPT = -g -O0 -fbounds-check
-DOSSIER = tests
+DOSSIER = rendu_paraview
 OBJ = m_type.o prog.o sousprog.o VTSWriter.o
 MODE_LIST = classique advection_pure_verticale advection_pure_horizontale advection_pure_verticale_CLF diffusion_pure_horizontale diffusion_pure_horizontale_R diffusion_pure_verticale diffusion_pure_verticale_R peclet_stationnaire convergence_maillage peclet_diffusion peclet_advection
 MODE ?= classique
