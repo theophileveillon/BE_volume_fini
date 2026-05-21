@@ -709,4 +709,29 @@ contains
 
     end subroutine write_python_peclet
 
+
+    subroutine write_python_peclet_adv(n, p, c_max, i_pe)
+        type(num), intent(IN) :: n
+        type(phys), intent(IN) :: p
+        integer, intent(IN) :: i_pe
+        real, dimension(:), intent(IN) :: c_max
+        integer :: i
+ 
+        if (i_pe == 1) then
+            open(9, file = 'data_peclet_adv_python.dat', status = 'unknown')
+            write(9, *) n%nx, n%ny, p%L, n%delta_t, n%nb_ite, p%alpha, p%kappa
+            close(9)
+        end if
+        open(9, file = 'data_peclet_adv_python.dat', status = 'old', position = 'append')
+        write(9, *) n%pe
+        do i = 1, n%nb_ite
+            write(9, '(E12.5)', advance="no") c_max(i)
+            if (i < n%nb_ite) then
+                write(9, '(A)', advance="no") ';'
+            end if
+        end do
+        close(9)
+ 
+    end subroutine write_python_peclet_adv
+
 end module sousprog

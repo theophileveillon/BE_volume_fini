@@ -65,6 +65,9 @@
     peclet_advection
         Même analyse que peclet_diffusion, mais avec variation
         de la vitesse α à la place de κ.
+    peclet_finale
+        Trace l'evolution des grandeurs adimenssionnées t95%/tau_diffusion
+         et t95%/tau_advection en fonction du peclet
 
 --------------------------------------------------------------------------------
   VISUALISATION PARAVIEW

@@ -60,6 +60,15 @@ def c_theorique_diffusion_pure(y, t, dist):
     return 1/2 * (1-math.erf((y-dist/2)/(2*np.sqrt(kappa*t))))
 
 
+def calc_t95(bloc, delta_t):
+        cmax       = bloc['data'][0]
+        t          = np.arange(len(cmax)) * delta_t
+        cmax_final = cmax[-1]
+        variation  = np.abs(cmax - cmax_final) / (cmax_final if cmax_final != 0 else 1.)
+        idx = np.where(variation > 0.05)[0]
+        return t[idx[-1]] if len(idx) > 0 else t[0]
+
+
 if mode == "advection_pure_verticale":
     nb_courbes = 5
     
@@ -311,12 +320,19 @@ if mode == "convergence_maillage":
     # ===== Plot =====
     plt.figure(figsize=(8,5))
 
+    R = 0.5
+    tf = 0.05e-3
     for i in range(0, nb_blocks):
         nx_i = blocs[i]['data'].shape[1]  # nx propre à ce bloc
+        ny_i = int(blocs[i]['constante']/nx_i)
+        dx_f  = 2.0 * L / nx_i
+        dy_f  = L / ny_i
+        dt_i    = 1.0 / (alpha/dx_f + alpha/dy_f
+                          + kappa/(R*dx_f**2) + kappa/(R*dy_f**2))
         y_i = np.linspace(0, 2*L, nx_i) * 1000
-        plt.plot(y_i, blocs[i]['data'][n_ites-1, :], label=f"nx, ny = {int(blocs[i]['constante']/nx_i)}, {nx_i}")
+        plt.plot(y_i, blocs[i]['data'][int(tf/dt_i)-1, :], label=f"nx, ny = {nx_i},{ny_i}")
     plt.xlabel("x (mm)")
-    plt.ylabel(f"c(x , y=L/2, t={n_ites*delta_t*1000:.2f}ms)")
+    plt.ylabel(f"c(x , y=L/2, t={tf*1000:.2f}ms)")
     #plt.title("Evolution du profil de concentration en y = L/2")
     plt.legend()
     plt.grid()
@@ -326,16 +342,38 @@ if mode == "convergence_maillage":
 if mode == "peclet_diffusion":
     # ===== Lecture du fichier =====
     filename = "data_peclet_python.dat"
-
+ 
     nx, ny, L, delta_t, n_ites, alpha, kappa, blocs = read_multi_constante_file(filename)
 
+    dx_f  = 2.0 * L / nx
+    dy_f  = L / ny
+    CFL_f = 1.0
+    R_f   = 0.5
+    Pe_diff    = []
+    t95_diff   = []
+    tau_d_diff = []
+ 
+    for bloc in blocs:
+        Pe      = bloc['constante']
+        kappa_i = alpha * L / Pe
+        dt_i    = 1.0 / (alpha/dx_f + alpha/dy_f
+                          + kappa_i/(R_f*dx_f**2) + kappa_i/(R_f*dy_f**2))
+        Pe_diff.append(Pe)
+        t95_diff.append(calc_t95(bloc, dt_i))
+        tau_d_diff.append(L**2 / kappa_i)
+
+    Pe_diff    = np.array(Pe_diff)
+    t95_diff   = np.array(t95_diff)
+ 
     # ===== Plot =====
     plt.figure(figsize=(8,5))
-
+ 
     for bloc in blocs:
+        dt_i    = 1.0 / (alpha/dx_f + alpha/dy_f
+                          + kappa_i/(R_f*dx_f**2) + kappa_i/(R_f*dy_f**2))
         Pe   = bloc['constante']
         cmax = bloc['data'][0]
-        t    = np.arange(len(cmax)) * delta_t
+        t    = np.arange(len(cmax)) * dt_i
         plt.plot(t, cmax, label=f"Pe = $10^{{{np.log10(Pe):.0f}}}$")
     plt.xlabel("t (s)")
     plt.ylabel("C_max")
@@ -343,88 +381,49 @@ if mode == "peclet_diffusion":
     plt.legend()
     plt.grid()
     plt.savefig("peclet_diffusion.png", dpi=300)
-
-    # ===== Calcul des t95% =====
-    t95_list = []
-    Pe_list  = []
-
-    for bloc in blocs:
-        Pe   = bloc['constante']
-        cmax = bloc['data'][0]
-        t    = np.arange(len(cmax)) * delta_t
-        
-        cmax_final = cmax[-1]
-        variation  = np.abs(cmax - cmax_final) / cmax_final
-        
-        # On cherche le dernier indice où on dépasse 5%
-        idx = np.where(variation > 0.05)[0]
-        if len(idx) > 0:
-            t95 = t[idx[-1]]
-        else:
-            t95 = t[0]
-        
-        Pe_list.append(Pe)
-        t95_list.append(t95)
-
+ 
     # ===== Plot t95% vs Pe =====
     plt.figure(figsize=(8, 5))
-    plt.plot(Pe_list, t95_list, 'o-')
+    plt.plot(Pe_diff, t95_diff, 'o-')
     plt.xscale('log')
     plt.xlabel("Pe")
     plt.ylabel("$t_{95\%}$ (s)")
     plt.title("Temps de convergence à 95% en fonction du nombre de Péclet")
     plt.grid()
     plt.savefig("t95_vs_peclet_diffusion.png", dpi=300)
-
-    # ===== Calcul des temps caractéristiques =====
-    t95_list = []
-    Pe_list  = []
-
-    for bloc in blocs:
-        Pe   = bloc['constante']
-        alpha = kappa * Pe / L
-        tau_d = L**2 / kappa
-        tau_c = L / alpha
-        cmax = bloc['data'][0]
-        t    = np.arange(len(cmax)) * delta_t
         
-        cmax_final = cmax[-1]
-        variation  = np.abs(cmax - cmax_final) / cmax_final
-        
-        idx = np.where(variation > 0.05)[0]
-        if len(idx) > 0:
-            t95 = t[idx[-1]]
-        else:
-            t95 = t[0]
-        
-        Pe_list.append(Pe)
-        t95_list.append(t95)
-
-    t95_arr = np.array(t95_list)
-    Pe_arr  = np.array(Pe_list)
-
-    # ===== Plot t95*/τ vs Pe =====
-    plt.figure(figsize=(8, 5))
-    plt.loglog(Pe_arr, t95_arr / tau_d, 'o-', label=r"$t_{95\%}/\tau_d$")
-    plt.loglog(Pe_arr, t95_arr / tau_c, 's-', label=r"$t_{95\%}/\tau_c$")
-    plt.xlabel("Pe")
-    plt.ylabel("Temps adimensionnel")
-    plt.title(r"Temps adimensionnels $t_{95\%}/\tau_d$ et $t_{95\%}/\tau_c$ en fonction de Pe")
-    plt.legend()
-    plt.grid(which='both')
-    plt.savefig("t95_adim_vs_peclet_diffusion.png", dpi=300)
-        
-
+ 
 if mode == "peclet_advection":
     
     # ===== Lecture du fichier =====
     filename = "data_peclet_python.dat"
-
+ 
     nx, ny, L, delta_t, n_ites, alpha, kappa, blocs = read_multi_constante_file(filename)
 
+    dx_f  = 2.0 * L / nx
+    dy_f  = L / ny
+    CFL_f = 1.0
+    R_f   = 0.5
+    Pe_adv    = []
+    t95_adv   = []
+    tau_c_adv = []
+ 
+    for bloc in blocs:
+        Pe      = bloc['constante']
+        alpha_i = kappa * Pe / L
+        dt_i    = 1.0 / (alpha_i/dx_f + alpha_i/dy_f
+                          + kappa/(R_f*dx_f**2) + kappa/(R_f*dy_f**2))
+        Pe_adv.append(Pe)
+        t95_adv.append(calc_t95(bloc, dt_i))
+        tau_c_adv.append(L / alpha_i)
+
+    Pe_adv    = np.array(Pe_adv)
+    t95_adv   = np.array(t95_adv)
+    tau_c_adv = np.array(tau_c_adv)
+ 
     # ===== Plot =====
     plt.figure(figsize=(8,5))
-
+ 
     for bloc in blocs:
         Pe   = bloc['constante']
         cmax = bloc['data'][0]
@@ -436,73 +435,82 @@ if mode == "peclet_advection":
     plt.legend()
     plt.grid()
     plt.savefig("peclet_advection.png", dpi=300)
-
-    # ===== Calcul des t95% =====
-    t95_list = []
-    Pe_list  = []
-
-    for bloc in blocs:
-        Pe   = bloc['constante']
-        cmax = bloc['data'][0]
-        t    = np.arange(len(cmax)) * delta_t
-        
-        cmax_final = cmax[-1]
-        variation  = np.abs(cmax - cmax_final) / cmax_final
-        
-        # On cherche le dernier indice où on dépasse 5%
-        idx = np.where(variation > 0.05)[0]
-        if len(idx) > 0:
-            t95 = t[idx[-1]]
-        else:
-            t95 = t[0]
-        
-        Pe_list.append(Pe)
-        t95_list.append(t95)
-
+ 
     # ===== Plot t95% vs Pe =====
     plt.figure(figsize=(8, 5))
-    plt.plot(Pe_list, t95_list, 'o-')
+    plt.plot(Pe_adv, t95_adv, 'o-')
     plt.xscale('log')
     plt.xlabel("Pe")
     plt.ylabel("$t_{95\%}$ (s)")
     plt.title("Temps de convergence à 95% en fonction du nombre de Péclet")
     plt.grid()
     plt.savefig("t95_vs_peclet_advection.png", dpi=300)
-
-    # ===== Calcul des temps caractéristiques =====
-    t95_list = []
-    Pe_list  = []
-
-    for bloc in blocs:
-        Pe   = bloc['constante']
-        alpha = kappa * Pe / L
-        tau_d = L**2 / kappa
-        tau_c = L / alpha
-        cmax = bloc['data'][0]
-        t    = np.arange(len(cmax)) * delta_t
-        
-        cmax_final = cmax[-1]
-        variation  = np.abs(cmax - cmax_final) / cmax_final
-        
-        idx = np.where(variation > 0.05)[0]
-        if len(idx) > 0:
-            t95 = t[idx[-1]]
-        else:
-            t95 = t[0]
-        
-        Pe_list.append(Pe)
-        t95_list.append(t95)
-
-    t95_arr = np.array(t95_list)
-    Pe_arr  = np.array(Pe_list)
-
-    # ===== Plot t95*/τ vs Pe =====
-    plt.figure(figsize=(8, 5))
-    plt.loglog(Pe_arr, t95_arr / tau_d, 'o-', label=r"$t_{95\%}/\tau_d$")
-    plt.loglog(Pe_arr, t95_arr / tau_c, 's-', label=r"$t_{95\%}/\tau_c$")
+ 
+ 
+if mode == "peclet_finale":
+    # ===== Lecture des deux fichiers =====
+    # data_peclet_python.dat     : boucle diffusion (kappa variable, alpha fixe)
+    # data_peclet_adv_python.dat : boucle advection  (alpha variable, kappa fixe)
+ 
+    nx, ny, L, delta_t, n_ites, alpha_header, kappa_header, blocs_diff = \
+        read_multi_constante_file("data_peclet_python.dat")
+ 
+    _, _, _, _, _, _, _, blocs_adv = \
+        read_multi_constante_file("data_peclet_adv_python.dat")
+ 
+    if len(blocs_diff) != 9:
+        print(f"Attention : {len(blocs_diff)} blocs dans data_peclet_python.dat, 9 attendus.")
+    if len(blocs_adv) != 9:
+        print(f"Attention : {len(blocs_adv)} blocs dans data_peclet_adv_python.dat, 9 attendus.")
+ 
+    dx_f  = 2.0 * L / nx
+    dy_f  = L / ny
+    CFL_f = 1.0
+    R_f   = 0.5
+ 
+    # ---- Série diffusion : alpha fixe = alpha_header, kappa = alpha*L/Pe ----
+    Pe_diff    = []
+    t95_diff   = []
+    tau_d_diff = []
+ 
+    for bloc in blocs_diff:
+        Pe      = bloc['constante']
+        kappa_i = alpha_header * L / Pe
+        dt_i    = 1.0 / (alpha_header/dx_f + alpha_header/dy_f
+                          + kappa_i/(R_f*dx_f**2) + kappa_i/(R_f*dy_f**2))
+        Pe_diff.append(Pe)
+        t95_diff.append(calc_t95(bloc, dt_i))
+        tau_d_diff.append(L**2 / kappa_i)
+ 
+    # ---- Série advection : kappa fixe = kappa_header, alpha = kappa*Pe/L ----
+    Pe_adv    = []
+    t95_adv   = []
+    tau_c_adv = []
+ 
+    for bloc in blocs_adv:
+        Pe      = bloc['constante']
+        alpha_i = kappa_header * Pe / L
+        dt_i    = 1.0 / (alpha_i/dx_f + alpha_i/dy_f
+                          + kappa_header/(R_f*dx_f**2) + kappa_header/(R_f*dy_f**2))
+        Pe_adv.append(Pe)
+        t95_adv.append(calc_t95(bloc, dt_i))
+        tau_c_adv.append(L / alpha_i)
+ 
+    Pe_diff    = np.array(Pe_diff)
+    t95_diff   = np.array(t95_diff)
+    tau_d_diff = np.array(tau_d_diff)
+ 
+    Pe_adv    = np.array(Pe_adv)
+    t95_adv   = np.array(t95_adv)
+    tau_c_adv = np.array(tau_c_adv)
+ 
+    # ===== Graphique final =====
+    plt.figure(figsize=(9, 6))
+    plt.loglog(Pe_diff, t95_diff / tau_d_diff, 'o-', label=r"$t_{95\%}/\tau_d$  (κ variable, α fixe)")
+    plt.loglog(Pe_adv,  t95_adv  / tau_c_adv,  's-', label=r"$t_{95\%}/\tau_c$  (α variable, κ fixe)")
     plt.xlabel("Pe")
     plt.ylabel("Temps adimensionnel")
     plt.title(r"Temps adimensionnels $t_{95\%}/\tau_d$ et $t_{95\%}/\tau_c$ en fonction de Pe")
     plt.legend()
     plt.grid(which='both')
-    plt.savefig("t95_adim_vs_peclet_advection.png", dpi=300)
+    plt.savefig("t95_adim_vs_peclet_finale.png", dpi=300)

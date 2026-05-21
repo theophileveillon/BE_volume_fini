@@ -397,9 +397,9 @@ program main
 
 
     if (mode == 'convergence_maillage') then 
-        n%nb_ite = 100
-        nx_values = [20, 40, 80, 160, 340, 680]
-        ny_values = [10, 20, 40, 80, 160, 340]
+        n%nb_ite = 500
+        nx_values = [10, 20, 40, 80, 160, 340]
+        ny_values = [5, 10, 20, 40, 80, 160]
 
         do i_vol = 1, 6
             n%nx = nx_values(i_vol)
@@ -450,7 +450,7 @@ program main
 
 
     if (mode == 'peclet_diffusion') then
-        n%nb_ite = 3000
+        n%nb_ite = 1000
         allocate(c_max(n%nb_ite))
         do i_pe = 1, 9
             n%pe = 10.**(i_pe - 3) ! pe allant de 0.01 à 10e6
@@ -483,7 +483,7 @@ program main
 
 
     if (mode == 'peclet_advection') then
-        n%nb_ite = 3000
+        n%nb_ite = 1000
         allocate(c_max(n%nb_ite))
         do i_pe = 1, 9
             n%pe = 10.**(i_pe - 3) ! pe allant de 0.01 à 10e6
@@ -511,6 +511,71 @@ program main
                 Step = Step + 1
             end do
             call write_python_peclet(n, p, c_max, i_pe)
+        end do
+    end if
+
+
+    if (mode == 'peclet_finale') then
+        n%nb_ite = 1000
+        allocate(c_max(n%nb_ite))
+
+        ! --- Boucle 1 : kappa variable, alpha fixe → data_peclet_python.dat ---
+        do i_pe = 1, 9
+            n%pe = 10.**(i_pe - 3) ! pe allant de 0.01 à 10e6
+            p%kappa = p%alpha*p%l/n%Pe
+            print*, "calcul pour un nombre de Peclet de pe =", n%pe
+
+            !initialisation de delta_x, delta_y, delta_t, C et des vitesses u et v
+            n%delta_x = 2 * p%l / n%nx
+            n%delta_y = p%l / n%ny
+            call init_c(g%c, p, n)
+            c_moy = sum(g%c) / (n%nx * n%ny)
+            call init_v(g%u, g%v, p, n)
+            call calc_delta_t(g, p, n)
+
+            ! boucle temporelle pour avoir C a chaque pas de temps
+            time = 0.
+            tf = (n%nb_ite-1) * n%dt
+            Step = 1
+            do i = 1, n%nb_ite
+                call writer(n, g, noeud, time, tf, Step, dossier)
+                call calc_c_t_dt(C_futur, g, p, n)
+                call calc_c_max(g, n, c_max, i)
+                g%c = C_futur
+                time = time + n%dt
+                Step = Step + 1
+            end do
+            call write_python_peclet(n, p, c_max, i_pe)
+        end do
+
+        ! --- Boucle 2 : alpha variable, kappa fixe → data_peclet_adv_python.dat ---
+        p%kappa = 1e-5
+        do i_pe = 1, 9
+            n%pe = 10.**(i_pe - 3)
+            p%alpha = p%kappa/(p%l/n%Pe)
+            print*, "calcul pour un nombre de Peclet de pe =", n%pe
+
+            !initialisation de delta_x, delta_y, delta_t, C et des vitesses u et v
+            n%delta_x = 2 * p%l / n%nx
+            n%delta_y = p%l / n%ny
+            call init_c(g%c, p, n)
+            c_moy = sum(g%c) / (n%nx * n%ny)
+            call init_v(g%u, g%v, p, n)
+            call calc_delta_t(g, p, n)
+
+            ! boucle temporelle pour avoir C a chaque pas de temps
+            time = 0.
+            tf = (n%nb_ite-1) * n%dt
+            Step = 1
+            do i = 1, n%nb_ite
+                call writer(n, g, noeud, time, tf, Step, dossier)
+                call calc_c_t_dt(C_futur, g, p, n)
+                call calc_c_max(g, n, c_max, i)
+                g%c = C_futur
+                time = time + n%dt
+                Step = Step + 1
+            end do
+            call write_python_peclet_adv(n, p, c_max, i_pe)
         end do
     end if
 
