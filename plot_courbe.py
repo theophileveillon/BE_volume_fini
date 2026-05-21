@@ -85,20 +85,19 @@ if mode == "advection_pure_verticale":
     data = np.array(data)
 
     # ===== Axe y =====
-    y = np.linspace(0, 2*L, nx)
+    y = np.linspace(0, 2*L, nx)*1000
 
     # ===== Plot =====
     plt.figure(figsize=(8,5))
 
     for i in range(0, nb_courbes):
         plt.plot(y, data[int(i*n_ites/nb_courbes)], label=f"C(t={i*n_ites/nb_courbes*delta_t*1000:.2f}ms)")
-    plt.xlabel("x (m)")
+    plt.xlabel("x (mm)")
     plt.ylabel("c(x, y = L/2)")
-    plt.title("Evolution du profil de concentration en y = L/2")
+    plt.title("Evolution du profil de concentration en y = L/2 pour différents instants")
     plt.legend()
     plt.grid()
     plt.savefig("advection_pure_verticale.png", dpi=300)
-    plt.show()
 
 
 if mode == "advection_pure_horizontale":
@@ -139,7 +138,6 @@ if mode == "advection_pure_horizontale":
     plt.legend()
     plt.grid()
     plt.savefig("advection_pure_horizontale.png", dpi=300)
-    plt.show()
 
 
 if mode == "advection_pure_verticale_CLF":
@@ -148,7 +146,7 @@ if mode == "advection_pure_verticale_CLF":
     filename = "data_advection_pure_verticale_CLF_python.dat"
 
     nx, ny, L, delta_t, n_ites, alpha, kappa,  blocs = read_multi_constante_file(filename)
-
+    t = 10*delta_t*1000 #en ms
     # ===== Axe y =====
     y = np.linspace(0, 2*L, nx)*1000
 
@@ -158,12 +156,11 @@ if mode == "advection_pure_verticale_CLF":
     for i in range(0, nb_blocks):
         plt.plot(y, blocs[i]['data'][10, :], label=f"CLF = {blocs[i]['constante']:.2f}")
     plt.xlabel("x (mm)")
-    plt.ylabel("c(x, y = L/2)")
-    plt.title("Evolution du profil de concentration en y = L/2")
+    plt.ylabel(f"c(x, y = L/2, t = {t:.2f}ms)")
+    #plt.title("Evolution du profil de concentration en y = L/2")
     plt.legend()
     plt.grid()
     plt.savefig("advection_pure_verticale_CLF.png", dpi=300)
-    plt.show()
 
 
 if mode == "diffusion_pure_horizontale":
@@ -202,7 +199,7 @@ if mode == "diffusion_pure_horizontale":
         # Courbe expérimentale
         line, = plt.plot(y, data[int(i * n_ites / nb_courbes)], label=f"C(t={t*1000:.2f}ms)")
         if i > 0:
-            ci = np.array([c_theorique_diffusion_pure(y[j], t, L) for j in range(ny)])
+            ci = np.array([c_theorique_diffusion_pure(y[j]/1000, t, L) for j in range(ny)])
             plt.plot(y, ci, '--', color=line.get_color(), label=f"C_th(t={t*1000:.2f}ms)")
     plt.xlabel("x (mm)")
     plt.ylabel("c(x=L, y)")
@@ -210,7 +207,6 @@ if mode == "diffusion_pure_horizontale":
     plt.legend()
     plt.grid()
     plt.savefig("diffusion_pure_horizontale.png", dpi=300)
-    plt.show()
 
 
 if mode == "diffusion_pure_horizontale_R":
@@ -234,7 +230,6 @@ if mode == "diffusion_pure_horizontale_R":
     plt.legend()
     plt.grid()
     plt.savefig("diffusion_pure_horizontale_R.png", dpi=300)
-    plt.show()
 
 
 if mode == "diffusion_pure_verticale":
@@ -273,15 +268,14 @@ if mode == "diffusion_pure_verticale":
         # Courbe expérimentale
         line, = plt.plot(y, data[int(i * n_ites / nb_courbes)], label=f"C(t={t*1000:.2f}ms)")
         if i > 0:
-            ci = np.array([c_theorique_diffusion_pure(y[j], t, 2*L) for j in range(nx)])
+            ci = np.array([c_theorique_diffusion_pure(y[j]/1000, t, 2*L) for j in range(nx)])
             plt.plot(y, ci, '--', color=line.get_color(), label=f"C_th(t={t*1000:.2f}ms)")
     plt.xlabel("x (mm)")
     plt.ylabel("c(x, y=L/2)")
-    plt.title("Evolution du profil de concentration en y = L/2")
+    plt.title("Comparaison des profils de concentration en y = L/2")
     plt.legend()
     plt.grid()
     plt.savefig("diffusion_pure_verticale.png", dpi=300)
-    plt.show()
 
 
 if mode == "diffusion_pure_verticale_R":
@@ -305,11 +299,10 @@ if mode == "diffusion_pure_verticale_R":
     plt.legend()
     plt.grid()
     plt.savefig("diffusion_pure_verticale_R.png", dpi=300)
-    plt.show()
 
 
 if mode == "convergence_maillage":
-    nb_blocks = 5
+    nb_blocks = 6
     # ===== Lecture du fichier =====
     filename = "data_convergence_maillage_python.dat"
 
@@ -321,14 +314,13 @@ if mode == "convergence_maillage":
     for i in range(0, nb_blocks):
         nx_i = blocs[i]['data'].shape[1]  # nx propre à ce bloc
         y_i = np.linspace(0, 2*L, nx_i) * 1000
-        plt.plot(y_i, blocs[i]['data'][n_ites-1, :], label=f"Vij = {2*L**2/blocs[i]['constante']*10e9:.2f} 10e-3 mm²")
+        plt.plot(y_i, blocs[i]['data'][n_ites-1, :], label=f"nx, ny = {int(blocs[i]['constante']/nx_i)}, {nx_i}")
     plt.xlabel("x (mm)")
-    plt.ylabel("c(x , y=L/2)")
-    plt.title("Evolution du profil de concentration en y = L/2")
+    plt.ylabel(f"c(x , y=L/2, t={n_ites*delta_t*1000:.2f}ms)")
+    #plt.title("Evolution du profil de concentration en y = L/2")
     plt.legend()
     plt.grid()
     plt.savefig("convergence_maillage.png", dpi=300)
-    plt.show()
 
 
 if mode == "peclet_diffusion":
@@ -351,7 +343,6 @@ if mode == "peclet_diffusion":
     plt.legend()
     plt.grid()
     plt.savefig("peclet_diffusion.png", dpi=300)
-    plt.show()
 
     # ===== Calcul des t95% =====
     t95_list = []
@@ -384,7 +375,6 @@ if mode == "peclet_diffusion":
     plt.title("Temps de convergence à 95% en fonction du nombre de Péclet")
     plt.grid()
     plt.savefig("t95_vs_peclet_diffusion.png", dpi=300)
-    plt.show()
 
     # ===== Calcul des temps caractéristiques =====
     t95_list = []
@@ -423,7 +413,6 @@ if mode == "peclet_diffusion":
     plt.legend()
     plt.grid(which='both')
     plt.savefig("t95_adim_vs_peclet_diffusion.png", dpi=300)
-    plt.show()
         
 
 if mode == "peclet_advection":
@@ -447,7 +436,6 @@ if mode == "peclet_advection":
     plt.legend()
     plt.grid()
     plt.savefig("peclet_advection.png", dpi=300)
-    plt.show()
 
     # ===== Calcul des t95% =====
     t95_list = []
@@ -480,7 +468,6 @@ if mode == "peclet_advection":
     plt.title("Temps de convergence à 95% en fonction du nombre de Péclet")
     plt.grid()
     plt.savefig("t95_vs_peclet_advection.png", dpi=300)
-    plt.show()
 
     # ===== Calcul des temps caractéristiques =====
     t95_list = []
@@ -519,4 +506,3 @@ if mode == "peclet_advection":
     plt.legend()
     plt.grid(which='both')
     plt.savefig("t95_adim_vs_peclet_advection.png", dpi=300)
-    plt.show()

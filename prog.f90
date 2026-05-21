@@ -11,7 +11,7 @@ program main
     real :: time, Tf, c_moy
     integer :: i, i_clf, i_R, i_vol, i_pe, Step
     real, dimension(5) :: CLF_values, R_values
-    integer, dimension(5) :: nx_values, ny_values
+    integer, dimension(6) :: nx_values, ny_values
     real, dimension(:), allocatable :: c_max
 
     !-----------------------------------------------------------------------------#
@@ -398,10 +398,10 @@ program main
 
     if (mode == 'convergence_maillage') then 
         n%nb_ite = 100
-        nx_values = [40, 100, 300, 600, 1000]
-        ny_values = [20, 50, 150, 300, 500]
+        nx_values = [20, 40, 80, 160, 340, 680]
+        ny_values = [10, 20, 40, 80, 160, 340]
 
-        do i_vol = 1, 5
+        do i_vol = 1, 6
             n%nx = nx_values(i_vol)
             n%ny = ny_values(i_vol)
 
